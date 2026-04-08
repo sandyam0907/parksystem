@@ -26,7 +26,7 @@
             <a href="<?= site_url('watchman/add') ?>" class="menu-link">• Add Watchman</a>
         </div>
 
-         <a href="<?= site_url('user-bookings') ?>" class="menu-link"> My Bookings</a>
+         <a href="<?= site_url('parkbooking/my_bookings') ?>" class="menu-link"> My Bookings</a>
 
         
     <?php endif; ?>

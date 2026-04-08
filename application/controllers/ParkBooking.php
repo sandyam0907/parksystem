@@ -218,7 +218,7 @@ QRcode::png($booking_ref, $filename, QR_ECLEVEL_L, 5);
 			'parking_image' => $parking_image,
             'latitude' => $latitude,
             'longitude' => $longitude,
-				'vehicle_name' => $vehicle_name,
+			'vehicle_name' => $vehicle_name,
             'vehicle_model' => $vehicle_model,
             'vehicle_number' => $vehicle_number,
             'created_at' => date('Y-m-d H:i:s'),
@@ -290,12 +290,14 @@ QRcode::png($booking_ref, $filename, QR_ECLEVEL_L, 5);
         echo json_encode($this->ParkBookingModel->getAll());
     }
 	
-	 public function Bookings()
+	 public function my_bookings()
     {
-        $data['bookings'] = $this->ParkBookingModel->getBookingWithUserDetails();
+       $userId = $this->session->userdata('uid');
+       //$userId = $this->input->post('user_id');
+        $data['bookings'] = $this->ParkBookingModel->getBookingWithUserDetails( $userId);
         $this->load->view('admin/my_bookings', $data);
     }
-    public function viewBookingDetail($booking_id)
+    public function booking_view($booking_id)
     {
         if (!$this->session->userdata('uid')) {
             redirect('login');

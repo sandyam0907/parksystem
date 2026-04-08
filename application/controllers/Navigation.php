@@ -6,5 +6,10 @@ class Navigation extends CI_Controller {
         $this->load->view('live_navigation');
     }
 
+    public function route()
+    {
+        $this->load->view('route_navigation');
+    }
+
 }
 ?>

@@ -41,7 +41,7 @@ public function bookingRefExists($ref)
     return $this->db->count_all_results('park_booking');
 }
 
- public function getBookingWithUserDetails()
+ public function getBookingWithUserDetails($userId)
     {
         return $this->db
             ->select('
@@ -58,11 +58,11 @@ public function bookingRefExists($ref)
             pb.booking_status,
             pb.created_at,
             u.name,
-            u.username,
             u.email AS user_email
         ')
             ->from('park_booking pb')
             ->join('users u', 'u.id = pb.user_id')
+             ->where('pb.user_id', $userId)
             ->order_by('pb.created_at', 'DESC')
             ->get()
             ->result();
@@ -75,13 +75,8 @@ public function bookingRefExists($ref)
             pb.*,
 
             u.name     AS user_name,
-            u.username AS username,
             u.email    AS user_email,
-            u.phone    AS user_phone,
-
-            v.vehicle_number,
-            v.vehicle_brand,
-            v.vehicle_model,
+            u.mobile    AS user_phone,
 
             p.parking_name,
             p.parking_location,
@@ -93,7 +88,6 @@ public function bookingRefExists($ref)
         ')
         ->from('park_booking pb')
         ->join('users u', 'u.id = pb.user_id', 'left')
-        ->join('vehicles v', 'v.user_id = pb.user_id', 'left')
         ->join('parking p', 'p.park_id = pb.park_id', 'left')
         ->where('pb.booking_id', $bookingId)
         ->get()
@@ -115,17 +109,14 @@ public function bookingRefExists($ref)
             pb.parking_booking_status,
             pb.total_amount,
 
-
             u.id        AS user_id,
             u.name      AS user_name,
-            u.name  AS user_username,
             u.email     AS user_email,
             u.mobile     AS user_phone,
             u.photo     AS user_photo,
             u.latitude  AS user_latitude,
             u.longitude AS user_longitude,
             u.status    AS user_status,
-
 
             p.parking_name,
             p.parking_price,
@@ -135,7 +126,11 @@ public function bookingRefExists($ref)
             p.pincode AS parking_pincode,
             p.latitude AS parking_latitude,
             p.longitude AS parking_longitude,
-            p.parking_status
+            p.parking_status,
+
+            pb.vehicle_name,
+            pb.vehicle_model,
+            pb.vehicle_number
 
         ')
         ->from('park_booking pb')

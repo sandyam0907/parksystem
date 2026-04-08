@@ -40,7 +40,7 @@
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-bold">Booking Details</h4>
-        <a href="<?= site_url('user-bookings') ?>" class="btn btn-sm btn-outline-secondary">
+        <a href="<?= site_url('parkbooking/my_bookings') ?>" class="btn btn-sm btn-outline-secondary">
             ← Back
         </a>
     </div>
@@ -79,10 +79,6 @@
                     <div class="info-row">
                         <span class="label">Name</span>
                         <span class="value"><?= $booking->user_name ?></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Username</span>
-                        <span class="value"><?= $booking->username ?></span>
                     </div>
                     <div class="info-row">
                         <span class="label">Email</span>
@@ -154,7 +150,7 @@
                     </div>
                     <div class="info-row">
                         <span class="label">Brand</span>
-                        <span class="value"><?= $booking->vehicle_brand ?: '-' ?></span>
+                        <span class="value"><?= $booking->vehicle_name ?: '-' ?></span>
                     </div>
                     <div class="info-row">
                         <span class="label">Model</span>

@@ -9,7 +9,6 @@
         <tr>
             <th>Booking Ref</th>
             <th>Booked By</th>
-            <th>Username</th>
             <th>Booked Date</th>
             <th>Created At</th>
             <th>Status</th>
@@ -22,7 +21,6 @@
         <tr>
             <td><?= $b->booking_ref ?></td>
             <td><?= $b->name ?></td>
-            <td><?= $b->username ?></td>
             <td><?= date('d-m-Y', strtotime($b->booked_date)) ?></td>
             <td><?= date('d-m-Y h:i A', strtotime($b->created_at)) ?></td>
             <td>
@@ -31,7 +29,7 @@
                 </span>
             </td>
             <td>
-                <a href="<?= site_url('bookings/view/'.$b->booking_id) ?>"
+                <a href="<?= site_url('parkbooking/booking_view/'.$b->booking_id) ?>"
                    class="btn btn-sm btn-info">
                    View
                 </a>
