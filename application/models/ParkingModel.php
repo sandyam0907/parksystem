@@ -62,16 +62,18 @@ class ParkingModel extends CI_Model{
         return $this->db->where('park_id',$id)->delete('parking');
     }
 	public function getallbooking($id){
-        return $this->db->where('user_id',$id)->get('park_booking')->result();
+        return $this->db
+        ->where('user_id', $id)
+        ->order_by('booking_id', 'DESC') 
+        ->get('park_booking')
+        ->result();
     }
 	public function getWatchmanList($parkid){
         return $this->db->where('parking_id',$parkid)->get('watchman')->result();
     }
 	
 	
+
 }
-
-
-
 
 ?>

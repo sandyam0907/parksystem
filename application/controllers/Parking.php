@@ -444,7 +444,6 @@ function getDistance($lat1, $lon1, $lat2, $lon2, $unit = 'K') {
 
 public function get_all_bookings($id)
 {
-	
 $parking['bookings'] = $this->ParkingModel->getallbooking($id);
         echo json_encode($parking);
         exit;	
