@@ -10,12 +10,6 @@ public function getAll(){
         return $this->db->insert('park_booking',$data);
     }
 
-    public function getByBookingRef($booking_ref)
-{
-    return $this->db->where('booking_ref', $booking_ref)->get('park_booking')->row();
-}
-
-
 public function bookingRefExists($ref)
 {
     return $this->db
@@ -130,7 +124,9 @@ public function bookingRefExists($ref)
 
             pb.vehicle_name,
             pb.vehicle_model,
-            pb.vehicle_number
+            pb.vehicle_number,
+            pb.payment_type,
+            pb.payment_status
 
         ')
         ->from('park_booking pb')
@@ -154,18 +150,20 @@ public function getById($booking_id)
         ->row();
 }
 
-public function getByBookingId($booking_id)
+public function getByBookingRef($booking_ref)
 {
     return $this->db
-        ->where('booking_ref', $booking_id)
+        ->where('booking_ref', $booking_ref)
         ->get('park_booking')
         ->row();
 }
 
-public function updateById($booking_id, $data)
+
+public function updateByBookingRef($booking_ref, $data)
 {
-    $this->db->where('booking_ref', $booking_id);
-    return $this->db->update('park_booking', $data);
+    return $this->db
+        ->where('booking_ref', $booking_ref)
+        ->update('park_booking', $data);
 }
 
 

@@ -203,7 +203,7 @@ QRcode::png($booking_ref, $filename, QR_ECLEVEL_L, 5);
         $data = [
             'booking_ref' => $booking_ref,
             'park_id' => $park_id,
-            'parking_name ' => $parking_name,
+            'parking_name' => $parking_name,
             'parking_price' => $parking_price,
             'parking_slots' => $parking->parking_slots,
             'user_id' => $user_id,
@@ -223,7 +223,9 @@ QRcode::png($booking_ref, $filename, QR_ECLEVEL_L, 5);
             'vehicle_number' => $vehicle_number,
             'created_at' => date('Y-m-d H:i:s'),
 			'scanner_qr_code'=>$filename,
-			'watchman_id'=>$watchmanid
+			'watchman_id'=>$watchmanid,
+            'payment_type' =>  'cod',
+            'payment_status' => 'pending'
         ];
 		
 		if($posting_status=='confirmed'){
@@ -309,14 +311,14 @@ QRcode::png($booking_ref, $filename, QR_ECLEVEL_L, 5);
         $this->load->view('admin/booking_view', $data);
     }
     
-public function update_status($booking_id)
+public function update_status($booking_ref)
 {
-    $status = $this->input->post('status'); 
+    $status = $this->input->post('status');
 
-    if (!$booking_id || !$status) {
+    if (!$status) {
         echo json_encode([
             'status' => false,
-            'message' => 'booking_id and status are required'
+            'message' => ' status is required'
         ]);
         return;
     }
@@ -328,11 +330,10 @@ public function update_status($booking_id)
             'status' => false,
             'message' => 'Invalid status'
         ]);
-      return;
+        return;
     }
 
-    // check booking exists
-    $booking = $this->ParkBookingModel->getByBookingId($booking_id);
+    $booking = $this->ParkBookingModel->getByBookingRef($booking_ref);
 
     if (!$booking) {
         echo json_encode([
@@ -342,24 +343,27 @@ public function update_status($booking_id)
         return;
     }
 
-    $updateData = [
-        'parking_booking_status' => $status,
-    ];
-
-    $updated = $this->ParkBookingModel->updateById($booking_id, $updateData);
-
-    if ($updated) {
-        echo json_encode([
-            'status' => true,
-            'message' => 'Status updated to ' . $status
-        ]);
-    } else {
+    // Prevent completion before payment
+    if ($status === 'completed' && $booking->payment_status !== 'completed') {
         echo json_encode([
             'status' => false,
-            'message' => 'Failed to update'
+            'message' => 'Payment must be completed before marking as completed'
         ]);
+        return;
     }
 
+    $updateData = [
+        'parking_booking_status' => $status
+    ];
+
+    $updated = $this->ParkBookingModel->updateByBookingRef($booking_ref, $updateData);
+
+    echo json_encode([
+        'status' => $updated ? true : false,
+        'message' => $updated
+            ? 'Status updated to ' . $status
+            : 'Failed to update'
+    ]);
 }
 
 public function cancelBookingByUser($booking_id)
