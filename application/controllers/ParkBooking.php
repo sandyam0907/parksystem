@@ -366,11 +366,11 @@ public function update_status($booking_ref)
     ]);
 }
 
-public function cancelBookingByUser($booking_id)
+public function cancelBookingByUser($booking_ref)
 {
     $user_id = $this->input->post('user_id');
 
-    if (!$booking_id || !$user_id) {
+    if (!$booking_ref || !$user_id) {
         echo json_encode([
             'status' => false,
             'message' => 'booking_id and user_id are required'
@@ -378,7 +378,7 @@ public function cancelBookingByUser($booking_id)
         return;
     }
 
-    $booking = $this->ParkBookingModel->getByBookingId($booking_id);
+    $booking = $this->ParkBookingModel->getByBookingRef($booking_ref);
 
     if (!$booking) {
         echo json_encode([
@@ -417,7 +417,7 @@ public function cancelBookingByUser($booking_id)
         'booking_status' => 'cancelled',
     ];
 
-    $updated = $this->ParkBookingModel->updateById($booking_id, $updateData);
+    $updated = $this->ParkBookingModel->updateByBookingRef($booking_ref, $updateData);
 
     if ($updated) {
         echo json_encode([

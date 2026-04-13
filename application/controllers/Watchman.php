@@ -24,7 +24,6 @@ class Watchman extends CI_Controller
         $this->load->view('admin/watchman_list', $data);
     }
 
-
     public function add()
     {
         // login check
@@ -350,7 +349,11 @@ class Watchman extends CI_Controller
                 'watchman_id' => $watchman->watchman_id,
                 'watchman_name' => $watchman->name,
                 'parking_id' => $watchman->parking_id,
-                'email' => $watchman->email
+                'email' => $watchman->email,
+                'date_of_birth' => $watchman->date_of_birth,
+                'gender' => $watchman->gender,
+                'phone' => $watchman->phone,
+                'watchman_image'=>$watchman->watchman_image
             ]
         ]);
     }
@@ -448,8 +451,228 @@ class Watchman extends CI_Controller
         ]);
     }
 
+    public function update_profile($watchman_id)
+    {
+        // Check if watchman exists
+        $watchman = $this->WatchmanModel->getById($watchman_id);
+        if (!$watchman) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Watchman not found'
+            ]);
+            return;
+        }
 
+        // Get POST data
+        $name = $this->input->post('name');
+        $email = $this->input->post('email');
+        $phone = $this->input->post('phone');
+        $date_of_birth = $this->input->post('date_of_birth');
+        $gender = $this->input->post('gender');
 
+        $data = [];
+
+        // Optional Fields
+        if (!empty($name)) {
+            $data['name'] = $name;
+        }
+
+        // Email Validation
+        if (!empty($email)) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode([
+                    'status' => false,
+                    'message' => 'Invalid email format'
+                ]);
+                return;
+            }
+            $data['email'] = $email;
+        }
+
+        // Phone Validation
+        if (!empty($phone)) {
+            if (!preg_match('/^[0-9]{10}$/', $phone)) {
+                echo json_encode([
+                    'status' => false,
+                    'message' => 'Phone number must be exactly 10 digits'
+                ]);
+                return;
+            }
+            $data['phone'] = $phone;
+        }
+
+        if (!empty($date_of_birth)) {
+            $data['date_of_birth'] = $date_of_birth;
+        }
+
+        if (!empty($gender)) {
+            $data['gender'] = $gender; // 1 = Male, 2 = Female
+        }
+
+        /* ================= IMAGE UPLOAD ================= */
+        if (!empty($_FILES['watchman_image']['name'])) {
+            $config['upload_path'] = FCPATH . 'uploads/watchman/';
+            $config['allowed_types'] = 'jpg|jpeg|png';
+            $config['max_size'] = 2048;
+            $config['file_name'] = time() . '_' . $_FILES['watchman_image']['name'];
+
+            $this->load->library('upload', $config);
+
+            if (!$this->upload->do_upload('watchman_image')) {
+                echo json_encode([
+                    'status' => false,
+                    'message' => strip_tags($this->upload->display_errors())
+                ]);
+                return;
+            }
+
+            // Delete old image
+            if (!empty($watchman->watchman_image)) {
+                $old_path = FCPATH . 'uploads/watchman/' . $watchman->watchman_image;
+                if (file_exists($old_path)) {
+                    unlink($old_path);
+                }
+            }
+
+            $data['watchman_image'] = $this->upload->data('file_name');
+        }
+
+        // Ensure at least one field is updated
+        if (empty($data)) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'No data provided to update'
+            ]);
+            return;
+        }
+
+        $data['updated_at'] = date('Y-m-d H:i:s');
+
+        // Update in database
+        $updated = $this->WatchmanModel->update($watchman_id, $data);
+
+        echo json_encode([
+            'status' => $updated ? true : false,
+            'message' => $updated
+                ? 'Profile updated successfully'
+                : 'Failed to update profile'
+        ]);
+    }
+
+public function update_password($watchman_id)
+{
+    // Get input values
+    $new_password = $this->input->post('new_password');
+    $confirm_password = $this->input->post('confirm_password');
+
+    // Validate Watchman ID
+    if (!$watchman_id) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Watchman ID is required'
+        ]);
+        return;
+    }
+
+    // Validate password fields
+    if (!$new_password || !$confirm_password) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'New password and confirm password are required'
+        ]);
+        return;
+    }
+
+    // Check if passwords match
+    if ($new_password !== $confirm_password) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Passwords do not match'
+        ]);
+        return;
+    }
+
+    // Validate password strength
+    if (strlen($new_password) < 6) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Password must be at least 6 characters long'
+        ]);
+        return;
+    }
+
+    // Check if watchman exists
+    $watchman = $this->WatchmanModel->getById($watchman_id);
+    if (!$watchman) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Watchman not found'
+        ]);
+        return;
+    }
+
+    // Hash the new password
+    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+
+    // Update password in database
+    $data = [
+        'password' => $hashed_password,
+        'updated_at' => date('Y-m-d H:i:s')
+    ];
+
+    $updated = $this->WatchmanModel->update($watchman_id, $data);
+
+    if ($updated) {
+        echo json_encode([
+            'status' => true,
+            'message' => 'Password updated successfully'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Failed to update password'
+        ]);
+    }
+}
+public function get_profile($watchman_id)
+{
+    if (!$watchman_id) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Watchman ID is required'
+        ]);
+        return;
+    }
+
+    $watchman = $this->WatchmanModel->getById($watchman_id);
+
+    if (!$watchman) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Watchman not found'
+        ]);
+        return;
+    }
+      // Prepare image URL
+    $image_url = !empty($watchman->watchman_image)
+        ? base_url('uploads/watchman/' . $watchman->watchman_image)
+        : null;
+
+    echo json_encode([
+        'status' => true,
+        'data' => [
+            'watchman_id' => $watchman->watchman_id,
+            'name' => $watchman->name,
+            'email' => $watchman->email,
+            'phone' => $watchman->phone,
+            'date_of_birth' => $watchman->date_of_birth,
+            'gender' => $watchman->gender,
+            'salary' => $watchman->salary,
+            'parking_id' => $watchman->parking_id,
+            'watchman_image' =>$image_url
+        ]
+    ]);
+}
 
 
 }
